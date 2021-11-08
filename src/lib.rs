@@ -1,35 +1,38 @@
 use std::cmp::max;
-use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
 
 pub struct Tree<'a> {
     input: &'a str,
-    char_count: HashMap<char, usize>,
-    char_code: HashMap<char, String>,
+    chars: Chars,
     node: Option<Node>,
 }
 
 impl<'a> Tree<'a> {
     pub fn from(input: &'a str) -> Self {
         // count chars
-        let mut char_count = HashMap::<char, usize>::new();
+        let mut chars = Chars::new();
         for c in input.chars() {
-            match char_count.get_mut(&c) {
+            match chars.get_mut(c) {
                 Some(v) => {
-                    *v += 1;
+                    v.count += 1;
                 }
                 None => {
-                    char_count.insert(c, 1);
+                    chars.push(CharEntry {
+                        char: c,
+                        count: 1,
+                        code: String::new(),
+                    });
                 }
             }
         }
 
         // create nodes
-        let mut nodes: Vec<_> = char_count
+        let mut nodes: Vec<_> = chars
             .iter()
-            .map(|(k, v)| {
+            .map(|e| {
                 Node::Leaf(LeafNode {
-                    char: *k,
-                    count: *v,
+                    char: e.char,
+                    count: e.count,
                 })
             })
             .collect();
@@ -50,22 +53,18 @@ impl<'a> Tree<'a> {
 
         // encode chars
         let node = nodes.into_iter().next();
-        let mut char_code = HashMap::new();
         if let Some(n) = &node {
             match n {
-                Node::Branch(_) => n.encode_chars(String::new(), &mut char_code),
+                Node::Branch(_) => n.encode_chars(String::new(), &mut chars),
                 Node::Leaf(l) => {
-                    char_code.insert(l.char, String::from("1"));
+                    if let Some(e) = chars.get_mut(l.char) {
+                        e.code = String::from("1");
+                    }
                 }
             }
         }
 
-        Self {
-            input,
-            char_count,
-            char_code,
-            node,
-        }
+        Self { input, chars, node }
     }
 
     pub fn width(&self) -> usize {
@@ -76,12 +75,8 @@ impl<'a> Tree<'a> {
         self.node.as_ref().map_or(0, |n| n.height())
     }
 
-    pub fn char_count(&self) -> &HashMap<char, usize> {
-        &self.char_count
-    }
-
-    pub fn char_code(&self) -> &HashMap<char, String> {
-        &self.char_code
+    pub fn chars(&self) -> &Chars {
+        &self.chars
     }
 
     pub fn node(&self) -> Option<&Node> {
@@ -92,8 +87,8 @@ impl<'a> Tree<'a> {
         let mut output = String::new();
         let mut iter = self.input.chars().peekable();
         while let Some(c) = iter.next() {
-            if let Some(s) = self.char_code.get(&c) {
-                output.push_str(s);
+            if let Some(e) = self.chars.get(c) {
+                output.push_str(&e.code);
                 if iter.peek().is_some() {
                     output.push_str(sep)
                 }
@@ -105,8 +100,8 @@ impl<'a> Tree<'a> {
     pub fn encoded_len(&self) -> usize {
         let mut len = 0;
         for c in self.input.chars() {
-            if let Some(s) = self.char_code.get(&c) {
-                len += s.len();
+            if let Some(e) = self.chars.get(c) {
+                len += e.code.len();
             }
         }
         len
@@ -155,16 +150,18 @@ impl Node {
         }
     }
 
-    fn encode_chars(&self, mut path: String, table: &mut HashMap<char, String>) {
+    fn encode_chars(&self, mut path: String, chars: &mut Chars) {
         match self {
             Self::Branch(n) => {
                 let path_a = format!("{}{}", path, '0');
-                n.a.encode_chars(path_a, table);
+                n.a.encode_chars(path_a, chars);
                 path.push('1');
-                n.b.encode_chars(path, table);
+                n.b.encode_chars(path, chars);
             }
             Self::Leaf(n) => {
-                table.insert(n.char, path);
+                if let Some(e) = chars.get_mut(n.char) {
+                    e.code = path;
+                }
             }
         }
     }
@@ -181,4 +178,41 @@ pub struct BranchNode {
 pub struct LeafNode {
     pub char: char,
     pub count: usize,
+}
+
+pub struct Chars(Vec<CharEntry>);
+
+#[derive(Debug)]
+pub struct CharEntry {
+    pub char: char,
+    pub count: usize,
+    pub code: String,
+}
+
+impl Deref for Chars {
+    type Target = Vec<CharEntry>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Chars {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl Chars {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn get(&self, char: char) -> Option<&CharEntry> {
+        self.iter().find(|e| e.char == char)
+    }
+
+    pub fn get_mut(&mut self, char: char) -> Option<&mut CharEntry> {
+        self.iter_mut().find(|e| e.char == char)
+    }
 }

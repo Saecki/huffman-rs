@@ -16,15 +16,9 @@ fn main() {
     let tree = Tree::from(&input);
 
     println!();
-    println!("Character count:");
-    for (c, n) in tree.char_count() {
-        println!("{}: {}", c, n);
-    }
-
-    println!();
-    println!("Character code:");
-    for (c, e) in tree.char_code() {
-        println!("{}: {}", c, e);
+    println!("Characters:");
+    for e in tree.chars().iter() {
+        println!("{}{: >6} {}", e.char, e.count, e.code);
     }
 
     let mut canvas = Canvas::new();
@@ -41,6 +35,7 @@ fn main() {
     println!("Encoded:");
     println!("{}", tree.encode(" "));
 
+    println!();
     println!("Length:");
     println!("{}", tree.encoded_len());
 }
