@@ -52,7 +52,12 @@ impl<'a> Tree<'a> {
         let node = nodes.into_iter().next();
         let mut char_code = HashMap::new();
         if let Some(n) = &node {
-            n.encode_chars(String::new(), &mut char_code);
+            match n {
+                Node::Branch(_) => n.encode_chars(String::new(), &mut char_code),
+                Node::Leaf(l) => {
+                    char_code.insert(l.char, String::from("1"));
+                }
+            }
         }
 
         Self {
@@ -95,6 +100,16 @@ impl<'a> Tree<'a> {
             }
         }
         return output;
+    }
+
+    pub fn encoded_len(&self) -> usize {
+        let mut len = 0;
+        for c in self.input.chars() {
+            if let Some(s) = self.char_code.get(&c) {
+                len += s.len();
+            }
+        }
+        len
     }
 }
 

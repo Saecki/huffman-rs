@@ -40,6 +40,9 @@ fn main() {
     println!();
     println!("Encoded:");
     println!("{}", tree.encode(" "));
+
+    println!("Length:");
+    println!("{}", tree.encoded_len());
 }
 
 struct Canvas {
