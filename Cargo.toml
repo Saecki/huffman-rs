@@ -1,6 +1,7 @@
-[package]
-name = "huffman"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = [
+    "huffman-lib",
+    "huffman-cli",
+    "huffman-gui",
+]
 
-[dependencies]

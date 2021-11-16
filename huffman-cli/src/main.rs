@@ -1,7 +1,7 @@
 use std::cmp::{max, min};
 use std::process::exit;
 
-use huffman::{Node, Tree};
+use huffman_lib::{Node, Tree};
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -13,7 +13,7 @@ fn main() {
         }
     };
 
-    let tree = Tree::from(&input);
+    let tree = Tree::from(input);
 
     println!();
     println!("Characters:");

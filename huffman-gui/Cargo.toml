@@ -1,0 +1,8 @@
+[package]
+name = "huffman-gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+huffman-lib = { path = "../huffman-lib" }
+iced = { version = "0.3", features = ["canvas"] }

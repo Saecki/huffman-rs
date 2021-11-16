@@ -1,14 +1,15 @@
 use std::cmp::max;
 use std::ops::{Deref, DerefMut};
 
-pub struct Tree<'a> {
-    input: &'a str,
+#[derive(Clone, Debug)]
+pub struct Tree {
+    input: String,
     chars: Chars,
     node: Option<Node>,
 }
 
-impl<'a> Tree<'a> {
-    pub fn from(input: &'a str) -> Self {
+impl Tree {
+    pub fn from(input: String) -> Self {
         // count chars
         let mut chars = Chars::new();
         for c in input.chars() {
@@ -75,6 +76,10 @@ impl<'a> Tree<'a> {
         self.node.as_ref().map_or(0, |n| n.height())
     }
 
+    pub fn input(&self) -> &str {
+        &self.input
+    }
+
     pub fn chars(&self) -> &Chars {
         &self.chars
     }
@@ -108,7 +113,7 @@ impl<'a> Tree<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Node {
     Branch(BranchNode),
     Leaf(LeafNode),
@@ -167,22 +172,23 @@ impl Node {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct BranchNode {
     pub count: usize,
     pub a: Box<Node>,
     pub b: Box<Node>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct LeafNode {
     pub char: char,
     pub count: usize,
 }
 
+#[derive(Clone, Debug)]
 pub struct Chars(Vec<CharEntry>);
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CharEntry {
     pub char: char,
     pub count: usize,
